@@ -1,0 +1,15 @@
+# R packages used in the project
+readxl
+tidyverse
+ggplot2
+sf
+giscoR
+stringdist
+spdep
+spatialreg
+corrplot
+car
+plm
+sandwich
+lmtest
+splm

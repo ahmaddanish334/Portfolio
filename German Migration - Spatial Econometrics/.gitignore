@@ -1,0 +1,13 @@
+.RData
+.Rhistory
+.Rproj.user/
+*.aux
+*.log
+*.out
+*.tex
+*.toc
+*.nav
+*.snm
+*.vrb
+.DS_Store
+Thumbs.db

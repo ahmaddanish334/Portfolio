@@ -1,0 +1,121 @@
+# OLIST POWER BI — DAX MEASURES
+
+## Date table
+Date =
+ADDCOLUMNS(
+    CALENDAR(DATE(2016,9,1), DATE(2018,10,31)),
+    "Year", YEAR([Date]),
+    "MonthNo", MONTH([Date]),
+    "Month", FORMAT([Date], "MMM"),
+    "MonthStart", DATE(YEAR([Date]), MONTH([Date]), 1),
+    "YearMonth", FORMAT([Date], "YYYY-MM"),
+    "Quarter", "Q" & FORMAT([Date], "Q")
+)
+
+## Core measures
+Orders = DISTINCTCOUNT(Orders[order_id])
+
+Delivered Orders =
+CALCULATE([Orders], Orders[order_status] = "delivered")
+
+Cancelled Orders =
+CALCULATE([Orders], Orders[order_status] = "canceled")
+
+Delivery Rate % =
+DIVIDE([Delivered Orders], [Orders])
+
+Product GMV =
+SUM('Order Items'[price])
+
+Freight =
+SUM('Order Items'[freight_value])
+
+Order Value incl Freight =
+[Product GMV] + [Freight]
+
+Delivered GMV =
+CALCULATE([Product GMV], Orders[order_status] = "delivered")
+
+Delivered Freight =
+CALCULATE([Freight], Orders[order_status] = "delivered")
+
+AOV =
+DIVIDE([Delivered GMV], [Delivered Orders])
+
+Freight % of Order Value =
+DIVIDE([Freight], [Order Value incl Freight])
+
+Unique Customers =
+DISTINCTCOUNT(Orders[customer_unique_id])
+
+Repeat Customers =
+COUNTROWS(
+    FILTER(
+        VALUES(Orders[customer_unique_id]),
+        CALCULATE(
+            DISTINCTCOUNT(Orders[order_id]),
+            REMOVEFILTERS('Date')
+        ) > 1
+    )
+)
+
+Repeat Customer % =
+DIVIDE([Repeat Customers], [Unique Customers])
+
+GMV per Customer =
+DIVIDE([Delivered GMV], [Unique Customers])
+
+Average Review Score =
+AVERAGE(Reviews[review_score])
+
+Late Delivered Orders =
+CALCULATE(
+    [Orders],
+    Orders[order_status] = "delivered",
+    Orders[late_delivery_flag] = TRUE()
+)
+
+Late Delivery % =
+DIVIDE([Late Delivered Orders], [Delivered Orders])
+
+Average Delivery Days =
+CALCULATE(
+    AVERAGE(Orders[delivery_days]),
+    Orders[order_status] = "delivered"
+)
+
+GMV LY =
+CALCULATE([Delivered GMV], SAMEPERIODLASTYEAR('Date'[Date]))
+
+GMV YoY % =
+DIVIDE([Delivered GMV] - [GMV LY], [GMV LY])
+
+GMV Previous Month =
+CALCULATE([Delivered GMV], DATEADD('Date'[Date], -1, MONTH))
+
+GMV MoM % =
+DIVIDE([Delivered GMV] - [GMV Previous Month], [GMV Previous Month])
+
+GMV YTD =
+TOTALYTD([Delivered GMV], 'Date'[Date])
+
+Rolling 12M GMV =
+CALCULATE(
+    [Delivered GMV],
+    DATESINPERIOD('Date'[Date], MAX('Date'[Date]), -12, MONTH)
+)
+
+Product GMV Rank =
+RANKX(ALL(Products[product_id]), [Delivered GMV], , DESC, Dense)
+
+Seller GMV Rank =
+RANKX(ALL(Sellers[seller_id]), [Delivered GMV], , DESC, Dense)
+
+Credit Card Payment Value =
+CALCULATE(
+    SUM(Payments[payment_value]),
+    Payments[payment_type] = "credit_card"
+)
+
+Average Installments =
+AVERAGE(Payments[payment_installments])

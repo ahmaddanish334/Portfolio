@@ -1,0 +1,8 @@
+WA_Fn-UseC_-Telco-Customer-Churn.csv
+customer_churn_risk_scores.csv
+.ipynb_checkpoints/
+__pycache__/
+.venv/
+venv/
+Thumbs.db
+.DS_Store
